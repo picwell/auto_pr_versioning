@@ -27,8 +27,12 @@ act as a post-hook for master changes works just as well.
 your repo.
 3. Configure the pipeline to clone your repo, and pass that directory to 
 this tool as an argument.
-4. Change your `setup.py` to calculate the version using something akin to
-`subprocess.check_call(['git', 'describe', '--abbrev=0'])`
+4. Change your `setup.py` to calculate the version from git using
+something akin to
+```
+process = subprocess.Popen(['git', 'describe', '--tags', '--abbrev=0'], stdout=subprocess.PIPE)
+_VERSION = process.communicate()[0].strip()
+```
 instead of hard coding it
 
 That's really it. Steps 2 and 3 will only need to be created once, then it
