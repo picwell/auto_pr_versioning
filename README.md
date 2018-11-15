@@ -27,8 +27,11 @@ act as a post-hook for master changes works just as well.
 your repo.
 3. Configure the pipeline to clone your repo, and pass that directory to 
 this tool as an argument.
+4. Change your `setup.py` to calculate the version using something akin to
+`subprocess.check_call(['git', 'describe', '--abbrev=0'])`
+instead of hard coding it
 
-That's really it. Steps 2 and 3 will only need to be create once, then it
+That's really it. Steps 2 and 3 will only need to be created once, then it
 should be reusable for new repos.
 
 ## How to version your repo then
