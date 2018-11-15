@@ -31,7 +31,8 @@ this tool as an argument.
 something akin to
 ```
 process = subprocess.Popen(['git', 'describe', '--tags', '--abbrev=0'], stdout=subprocess.PIPE)
-_VERSION = process.communicate()[0].strip()
+_VERSION = process.communicate()[0]
+_VERSION = _VERSION.strip() if _VERSION else 'v0.0.0'
 ```
 instead of hard coding it
 
