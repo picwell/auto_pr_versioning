@@ -43,9 +43,9 @@ should be reusable for new repos.
 
 1. When you have a PR going into master, put one of the labels created
 above on it before merging.
-  * "major" will increment `v0.0.0` to `v1.0.0`
-  * "minor" will increment `v0.0.0` to `v0.1.0`
-  * "patch" will increment `v0.0.0` to `v0.0.1`
+  * `major` will increment `v0.0.0` to `v1.0.0`
+  * `minor` will increment `v0.0.0` to `v0.1.0`
+  * `patch` will increment `v0.0.0` to `v0.0.1`
   
 ## How this will work on the backend
 A commit to master will trigger the following in the pipeline:
