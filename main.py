@@ -113,7 +113,7 @@ def process(args):
         logging.warning('No label found, defaulting to patch increment')
         new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
 
-    add_new_tag(new_version, 'auto-generated tag for {}: {}'.format(commit_hash[:6], title))
+    add_new_tag(new_version, 'auto-generated tag for {}: {}'.format(commit_hash[:10], title))
 
 
 if __name__ == '__main__':
