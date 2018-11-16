@@ -11,6 +11,6 @@ WORKDIR /auto_pr_versioning
 ADD . /auto_pr_versioning
 
 # Install all the requirements
-RUN pip install -i http://pypi-staging.picwell.com/simple --trusted-host pypi-staging.picwell.com -r requirements.txt
+RUN pip install -r requirements.txt
 
 CMD python main.py -n $GIT_REPO_NAME -t $GIT_TOKEN
