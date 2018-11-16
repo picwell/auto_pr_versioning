@@ -1,7 +1,5 @@
 import logging
-import os
 import re
-import subprocess
 from argparse import ArgumentParser
 
 from github import Github
@@ -11,11 +9,11 @@ def parse_arguments():
     """ Parse command-line args """
     parser = ArgumentParser()
 
-    parser.add_argument('-d',
-                        '--directory',
-                        dest='git_repo_dir',
+    parser.add_argument('-n',
+                        '--name',
+                        dest='git_repo_name',
                         required=True,
-                        help='path the top-level directory of the git repo')
+                        help='the full-name of the git repo, ex: "picwell/auto_pr_versioning"')
 
     parser.add_argument('-t',
                         '--token',
@@ -49,11 +47,9 @@ def get_pr_from_hash(commit_hash, github):
     return matching_issues[0] if matching_issues else None
 
 
-def get_commit_hash():
-    """ Get the current commit's sha hash """
-    process = subprocess.Popen(['git', 'rev-parse', '--verify', 'HEAD'], stdout=subprocess.PIPE)
-
-    return process.communicate()[0].strip()
+def get_current_commit_hash(git_branch):
+    """ Get the current commit's sha hash for a given branch"""
+    return git_branch.commit.sha
 
 
 def get_commit_message(commit_hash, github):
@@ -65,49 +61,37 @@ def get_commit_message(commit_hash, github):
     return commits[0].commit.message
 
 
-def get_current_tagged_version_parts():
+def get_current_tagged_version_parts(the_repo, commit_hash):
     """ Get the current major, minor, and patch version parts """
-    process = subprocess.Popen(['git', 'describe', '--tags', '--abbrev=0'], stdout=subprocess.PIPE)
-    current_tag = process.communicate()[0].strip()
+    current_tag = [x for x in the_repo.get_tags() if x.commit.sha == commit_hash][0].name
 
     major_version = re.search(r'\d+', current_tag, 0).group()
     _major_offset = current_tag.index(major_version) + len(major_version)
     minor_version = re.search(r'\d+', current_tag[_major_offset:]).group()
     _minor_offset = current_tag.index(minor_version, _major_offset) + len(minor_version)
-    patch_version = int(re.search(r'\d+', current_tag[_minor_offset:]).group())
+    patch_version = re.search(r'\d+', current_tag[_minor_offset:]).group()
 
     return major_version, minor_version, patch_version
 
 
-def add_new_tag(version, message):
+def add_new_tag(the_repo, commit_hash, version, message):
     """ Create and push a new tag """
-    subprocess.check_call(['git', 'tag', '-a', version, '-m', message])
-
-    subprocess.check_call(['git', 'push', '--tags'])
+    the_repo.create_git_tag_and_release(tag=version, tag_message=message, release_name=version,
+                                        release_message=message,
+                                        object=commit_hash, type='commit')
 
 
 def process(args):
     _setup_logging()
 
-    # cd into the directory
-    if not os.path.isdir(args.git_repo_dir):
-        logging.error("`{}` is not a directory".format(args.git_repo_dir))
-
-    os.chdir(args.git_repo_dir)
-
-    # Make sure its a git repo
-    try:
-        with open(os.devnull, 'w') as FNULL:
-            assert subprocess.check_call(['git', 'branch'], stdout=FNULL,
-                                         stderr=subprocess.STDOUT) == 0
-    except subprocess.CalledProcessError as e:
-        logging.exception("`{}` is not a git repo".format(args.git_repo_dir))
-
-    commit_hash = get_commit_hash()
-    major_version, minor_version, patch_version = get_current_tagged_version_parts()
-
     # Log into GitHub API
     g = Github(args.token)
+
+    the_repo = g.get_repo(args.git_repo_name)
+
+    commit_hash = get_current_commit_hash(the_repo.get_branch('master'))
+    major_version, minor_version, patch_version = get_current_tagged_version_parts(the_repo,
+                                                                                   commit_hash)
 
     pull_request_issue = get_pr_from_hash(commit_hash, g)
 
@@ -130,7 +114,7 @@ def process(args):
         logging.warning('No PR found, defaulting to patch increment')
         new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
 
-    add_new_tag(new_version, '{}: auto-generated tag'.format(title))
+    add_new_tag(the_repo, commit_hash, new_version, '{}: auto-generated tag'.format(title))
 
 
 if __name__ == '__main__':
