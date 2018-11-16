@@ -100,6 +100,7 @@ def process(args):
 
     pull_request_issue = get_pr_from_hash(commit_hash, g)
     labels = [x.name for x in pull_request_issue.labels]
+    title = pull_request_issue.title
 
     # Figure out increment
     if 'major' in labels:
@@ -112,7 +113,7 @@ def process(args):
         logging.warning('No label found, defaulting to patch increment')
         new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
 
-    add_new_tag(new_version, 'auto-generated tag for {}'.format(commit_hash[:6]))
+    add_new_tag(new_version, 'auto-generated tag for {}: {}'.format(commit_hash[:6], title))
 
 
 if __name__ == '__main__':
