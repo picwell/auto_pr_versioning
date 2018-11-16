@@ -41,10 +41,12 @@ def get_pr_from_hash(commit_hash, github):
     """ Find the pull request corresponding to a given sha hash """
     matching_issues = list(github.search_issues("", sha=commit_hash))
 
-    if len(matching_issues) != 1:
+    if len(matching_issues) > 1:
         raise Exception('Multiple issues found')
+    elif len(matching_issues) == 0:
+        logging.warning("No associated PR, likely a direct commit to master :(")
 
-    return matching_issues[0]
+    return matching_issues[0] if matching_issues else None
 
 
 def get_commit_hash():
@@ -52,6 +54,15 @@ def get_commit_hash():
     process = subprocess.Popen(['git', 'rev-parse', '--verify', 'HEAD'], stdout=subprocess.PIPE)
 
     return process.communicate()[0].strip()
+
+
+def get_commit_message(commit_hash, github):
+    commits = list(github.search_commits("", sha=commit_hash))
+
+    if len(commits) != 1:
+        raise Exception("More than one commit found for sha `{}`".format(commit_hash))
+
+    return commits[0].commit.message
 
 
 def get_current_tagged_version_parts():
@@ -99,18 +110,24 @@ def process(args):
     g = Github(args.token)
 
     pull_request_issue = get_pr_from_hash(commit_hash, g)
-    labels = [x.name for x in pull_request_issue.labels]
-    title = pull_request_issue.title
 
-    # Figure out increment
-    if 'major' in labels:
-        new_version = 'v{}.{}.{}'.format(int(major_version) + 1, minor_version, patch_version)
-    elif 'minor' in labels:
-        new_version = 'v{}.{}.{}'.format(major_version, int(minor_version) + 1, patch_version)
-    elif 'patch' in labels:
-        new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
+    if pull_request_issue is not None:
+        labels = [x.name for x in pull_request_issue.labels]
+        title = pull_request_issue.title
+
+        # Figure out increment
+        if 'major' in labels:
+            new_version = 'v{}.{}.{}'.format(int(major_version) + 1, minor_version, patch_version)
+        elif 'minor' in labels:
+            new_version = 'v{}.{}.{}'.format(major_version, int(minor_version) + 1, patch_version)
+        elif 'patch' in labels:
+            new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
+        else:
+            logging.warning('No label found, defaulting to patch increment')
+            new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
     else:
-        logging.warning('No label found, defaulting to patch increment')
+        title = get_commit_message(commit_hash, g)
+        logging.warning('No PR found, defaulting to patch increment')
         new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
 
     add_new_tag(new_version, 'auto-generated tag for {}: {}'.format(commit_hash[:10], title))
