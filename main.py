@@ -63,7 +63,12 @@ def get_commit_message(commit_hash, github):
 
 def get_current_tagged_version_parts(the_repo, commit_hash):
     """ Get the current major, minor, and patch version parts """
-    current_tag = [x for x in the_repo.get_tags() if x.commit.sha == commit_hash][0].name
+    all_tags = list(the_repo.get_tags())
+    
+    if len(all_tags) == 0:
+        return None, None, None
+
+    current_tag = [x for x in all_tags if x.commit.sha == commit_hash][0].name
 
     major_version = re.search(r'\d+', current_tag, 0).group()
     _major_offset = current_tag.index(major_version) + len(major_version)
@@ -95,9 +100,14 @@ def process(args):
 
     pull_request_issue = get_pr_from_hash(commit_hash, g)
 
-    if pull_request_issue is not None:
+    # Get the title
+    title = pull_request_issue.title if pull_request_issue is not None else \
+        get_commit_message(commit_hash, g)
+
+    if major_version is None:
+        new_version = 'v0.0.0'
+    elif pull_request_issue is not None:
         labels = [x.name for x in pull_request_issue.labels]
-        title = pull_request_issue.title
 
         # Figure out increment
         if 'major' in labels:
@@ -110,8 +120,7 @@ def process(args):
             logging.warning('No label found, defaulting to patch increment')
             new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
     else:
-        title = get_commit_message(commit_hash, g)
-        logging.warning('No PR found, defaulting to patch increment')
+        logging.warning('Defaulting to patch increment')
         new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
 
     add_new_tag(the_repo, commit_hash, new_version, '{}: auto-generated tag'.format(title))
