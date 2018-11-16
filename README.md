@@ -25,8 +25,8 @@ act as a post-hook for master changes works just as well.
 1. Create 3 labels in your GitHub repo: "major", "minor", and "patch".
 2. Setup a CodePipeline to trigger on changes to the **master** branch of
 your repo.
-3. Configure the pipeline to clone your repo, and pass that directory to 
-this tool as an argument.
+3. Configure the pipeline to call this tool with your repo name as an
+argument.
 4. Change your `setup.py` to calculate the version from git using
 something akin to
 ```
@@ -50,10 +50,10 @@ above on it before merging.
 ## How this will work on the backend
 A commit to master will trigger the following in the pipeline:
 
-1. Clone your repo down
-2. That directory will be passed to this tool
-3. This tool will create and push a new tag to your repo based on the 
-label in the corresponding PR
+1. The repository name (ex: *picwell/auto_pr_versioning*)will be passed to this tool's CodeBuild
+2. This tool will create and push a new tag to your repo based on the 
+label in the corresponding PR and the current tagged version on 
+**master**
 
 Additional steps your pipeline could take now, automatically:
 * create a new distribution of your package, and push it to our PyPi
