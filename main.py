@@ -53,6 +53,7 @@ def get_current_commit_hash(git_branch):
 
 
 def get_commit_message(commit_hash, github):
+    """ Get a given commit's message """
     commits = list(github.search_commits("", sha=commit_hash))
 
     if len(commits) != 1:
