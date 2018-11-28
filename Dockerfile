@@ -13,4 +13,4 @@ ADD . /auto_pr_versioning
 # Install all the requirements
 RUN pip install -r requirements.txt
 
-ENTRYPOINT ["python", "main.py"]
+CMD python main.py
