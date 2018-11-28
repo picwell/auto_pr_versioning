@@ -4,7 +4,7 @@ phases:
   pre_build:
     commands:
     - echo Setting up variables
-    - REPOSITORY_URI=198118428450.dkr.ecr.us-east-2.amazonaws.com/auto_pr_versioning_sandbox
+    - REPOSITORY_URI=198118428450.dkr.ecr.us-east-1.amazonaws.com/auto_pr_versioning_sandbox
     - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
     - IMAGE_TAG=${COMMIT_HASH:=latest}
     - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
