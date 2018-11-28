@@ -13,4 +13,4 @@ ADD . /auto_pr_versioning
 # Install all the requirements
 RUN pip install -r requirements.txt
 
-CMD python main.py
+CMD python main.py -n $GIT_REPO_NAME -t $GIT_ACCESS_TOKEN
