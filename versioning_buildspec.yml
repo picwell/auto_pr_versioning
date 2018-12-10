@@ -3,6 +3,7 @@ version: 0.2
 env:
   variables:
     GIT_REPO_NAME: "picwell/auto_pr_versioning"
+    REPOSITORY_URI: "198118428450.dkr.ecr.us-east-1.amazonaws.com/auto_pr_versioning_sandbox"
   parameter-store:
     GIT_ACCESS_TOKEN: "GIT_ACCESS_TOKEN"
 
@@ -10,7 +11,6 @@ phases:
   pre_build:
     commands:
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-      - REPOSITORY_URI=198118428450.dkr.ecr.us-east-1.amazonaws.com/auto_pr_versioning_sandbox
   build:
     commands:
     - echo Pulling the latest image
