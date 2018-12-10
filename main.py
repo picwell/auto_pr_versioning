@@ -90,8 +90,6 @@ def add_new_tag(the_repo, commit_hash, version, message):
 def process(args):
     _setup_logging()
 
-    print(args)
-
     # Log into GitHub API
     g = Github(args.token)
 
