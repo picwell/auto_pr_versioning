@@ -113,9 +113,9 @@ def process(args):
 
         # Figure out increment
         if 'major' in labels:
-            new_version = 'v{}.{}.{}'.format(int(major_version) + 1, minor_version, patch_version)
+            new_version = 'v{}.0.0'.format(int(major_version) + 1)
         elif 'minor' in labels:
-            new_version = 'v{}.{}.{}'.format(major_version, int(minor_version) + 1, patch_version)
+            new_version = 'v{}.{}.0'.format(major_version, int(minor_version) + 1)
         elif 'patch' in labels:
             new_version = 'v{}.{}.{}'.format(major_version, minor_version, int(patch_version) + 1)
         else:
