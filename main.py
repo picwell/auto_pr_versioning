@@ -62,14 +62,14 @@ def get_commit_message(commit_hash, github):
     return commits[0].commit.message
 
 
-def get_current_tagged_version_parts(the_repo, commit_hash):
+def get_current_tagged_version_parts(the_repo):
     """ Get the current major, minor, and patch version parts """
     all_tags = list(the_repo.get_tags())
     
     if len(all_tags) == 0:
         return None, None, None
 
-    current_tag = [x for x in all_tags if x.commit.sha == commit_hash][0].name
+    current_tag = all_tags[0].name
 
     major_version = re.search(r'\d+', current_tag, 0).group()
     _major_offset = current_tag.index(major_version) + len(major_version)
@@ -90,14 +90,15 @@ def add_new_tag(the_repo, commit_hash, version, message):
 def process(args):
     _setup_logging()
 
+    print(args)
+
     # Log into GitHub API
     g = Github(args.token)
 
     the_repo = g.get_repo(args.git_repo_name)
 
     commit_hash = get_current_commit_hash(the_repo.get_branch('master'))
-    major_version, minor_version, patch_version = get_current_tagged_version_parts(the_repo,
-                                                                                   commit_hash)
+    major_version, minor_version, patch_version = get_current_tagged_version_parts(the_repo)
 
     pull_request_issue = get_pr_from_hash(commit_hash, g)
 

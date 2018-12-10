@@ -17,6 +17,3 @@ phases:
       - docker pull $REPOSITORY_URI:latest
     - echo Running Auto PR Versioner!
     - docker run -e AWS_DEFAULT_REGION -e AWS_CONTAINER_CREDENTIALS_RELATIVE_URI -e "GIT_REPO_NAME=$GIT_REPO_NAME" -e "GIT_ACCESS_TOKEN=$GIT_ACCESS_TOKEN" $REPOSITORY_URI:latest
-    - echo Building the PyPi package
-    - python setup.py sdist bdist_wheel
-    - echo "twine upload -r blahblah dist/*"
