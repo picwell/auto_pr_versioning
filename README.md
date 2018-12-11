@@ -25,8 +25,9 @@ act as a post-hook for master changes works just as well.
 1. Create 3 labels in your GitHub repo: "major", "minor", and "patch".
 2. Setup a CodePipeline to trigger on changes to the **master** branch of
 your repo.
-3. Configure the pipeline to call this tool with your repo name as an
-argument.
+    - As part of the "Deploy" stage, add an action that uses the AutoVersioning CodeBuild project
+    - Add a `versioning_buildspec.yml` file to your repo, similar to the one in this repo but changing the 
+    `GIT_REPO_NAME` variable to be your repository
 4. Change your `setup.py` to calculate the version from git using
 something akin to
 ```
@@ -35,9 +36,6 @@ _VERSION = process.communicate()[0]
 _VERSION = _VERSION.strip() if _VERSION else 'v0.0.0'
 ```
 instead of hard coding it
-
-That's really it. Steps 2 and 3 will only need to be created once, then it
-should be reusable for new repos.
 
 ## How to version your repo then
 
